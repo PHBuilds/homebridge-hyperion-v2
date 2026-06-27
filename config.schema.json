@@ -1,0 +1,377 @@
+{
+  "pluginAlias": "Hyperion",
+  "pluginType": "accessory",
+  "singular": false,
+  "headerDisplay": "Full-featured control of Hyperion / Hyperion.NG. This form edits a classic `\"accessory\": \"Hyperion\"` block, so it is drop-in compatible with existing installs. For multi-instance auto-discovery, use the `HyperionV2` platform (see README).",
+  "footerDisplay": "For help and the full options list, see the [project README](https://github.com/phbuilds/homebridge-hyperion-v2).",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "Hyperion TV Backlight",
+        "required": true,
+        "description": "Display name of the main light in HomeKit."
+      },
+      "host": {
+        "title": "Host / IP",
+        "type": "string",
+        "default": "192.168.0.10",
+        "required": true,
+        "description": "IP or hostname of your Hyperion server. Use a static IP / DHCP reservation. (The legacy key 'url' is also accepted.)"
+      },
+      "port": {
+        "title": "Port",
+        "type": "integer",
+        "default": 19444,
+        "required": false,
+        "description": "19444 = Hyperion JSON TCP socket (classic default). 8090 = Hyperion.NG web server (HTTP)."
+      },
+      "transport": {
+        "title": "Transport",
+        "type": "string",
+        "default": "auto",
+        "required": false,
+        "oneOf": [
+          {
+            "title": "Auto (8090 -> HTTP, else TCP)",
+            "enum": [
+              "auto"
+            ]
+          },
+          {
+            "title": "TCP JSON socket",
+            "enum": [
+              "tcp"
+            ]
+          },
+          {
+            "title": "HTTP /json-rpc",
+            "enum": [
+              "http"
+            ]
+          }
+        ]
+      },
+      "token": {
+        "title": "API Token",
+        "type": "string",
+        "required": false,
+        "description": "Only needed if your Hyperion has API authentication enabled. Generate it in Hyperion under Network -> Token Management."
+      },
+      "tls": {
+        "title": "Use HTTPS",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "condition": {
+          "functionBody": "return model.transport === 'http';"
+        }
+      },
+      "priority": {
+        "title": "Priority",
+        "type": "integer",
+        "default": 100,
+        "required": false,
+        "description": "Hyperion priority used for color/effect commands. Lower number = higher priority."
+      },
+      "ambilightName": {
+        "title": "Ambilight Switch Name",
+        "type": "string",
+        "default": "Hyperion TV Ambilight",
+        "required": false
+      },
+      "ambilightTarget": {
+        "title": "Ambilight Controls",
+        "type": "string",
+        "default": "auto",
+        "required": false,
+        "oneOf": [
+          {
+            "title": "Auto-detect capture component",
+            "enum": [
+              "auto"
+            ]
+          },
+          {
+            "title": "USB / HDMI grabber (V4L)",
+            "enum": [
+              "usb"
+            ]
+          },
+          {
+            "title": "Screen capture (platform GRABBER)",
+            "enum": [
+              "screen"
+            ]
+          },
+          {
+            "title": "Both",
+            "enum": [
+              "both"
+            ]
+          }
+        ]
+      },
+      "pollInterval": {
+        "title": "Poll Interval (seconds)",
+        "type": "integer",
+        "default": 10,
+        "minimum": 0,
+        "required": false,
+        "description": "How often to re-read Hyperion state so HomeKit reflects external changes. Set 0 to disable polling (TCP still gets live push updates)."
+      },
+      "effects": {
+        "title": "Effects",
+        "type": "array",
+        "required": false,
+        "description": "Leave EMPTY to auto-discover effects from your Hyperion/HyperHDR server (recommended). Add names here only to override with a custom subset (exact names from the Hyperion web UI).",
+        "items": {
+          "title": "Effect Name",
+          "type": "string"
+        }
+      },
+      "expose": {
+        "title": "Exposed Services",
+        "type": "object",
+        "properties": {
+          "color": {
+            "title": "Color (Hue/Saturation)",
+            "type": "boolean",
+            "default": true
+          },
+          "ambilight": {
+            "title": "Ambilight switch",
+            "type": "boolean",
+            "default": true
+          },
+          "effects": {
+            "title": "Effects selector",
+            "type": "boolean",
+            "default": true
+          },
+          "usbCapture": {
+            "title": "USB capture switch (V4L) \u2014 extra",
+            "type": "boolean",
+            "default": false
+          },
+          "screenCapture": {
+            "title": "Screen capture switch (GRABBER)",
+            "type": "boolean",
+            "default": false
+          },
+          "audioCapture": {
+            "title": "Audio capture switch",
+            "type": "boolean",
+            "default": false
+          },
+          "captureSwitches": {
+            "title": "All capture switches (USB + Screen + Audio)",
+            "type": "boolean",
+            "default": false
+          },
+          "componentSwitches": {
+            "title": "Component switches (Smoothing, Blackbar, Forwarder, ...)",
+            "type": "boolean",
+            "default": false
+          },
+          "clearAllSwitch": {
+            "title": "Clear-all button",
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "origin": {
+        "title": "Origin Label",
+        "type": "string",
+        "default": "Homebridge",
+        "required": false,
+        "description": "Shown in Hyperion's priority list as the source of commands."
+      },
+      "powerComponent": {
+        "title": "Power Switch Controls",
+        "type": "string",
+        "default": "ALL",
+        "required": false,
+        "oneOf": [
+          {
+            "title": "Whole instance (ALL) \u2014 recommended",
+            "enum": [
+              "ALL"
+            ]
+          },
+          {
+            "title": "LED device only",
+            "enum": [
+              "LEDDEVICE"
+            ]
+          }
+        ],
+        "description": "Which Hyperion component the main on/off switch toggles. The plugin also stops the LED device on Off so WLED and similar devices actually go dark."
+      },
+      "verboseLog": {
+        "title": "Verbose logging",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "description": "Log every command sent to Hyperion and its result to the main log. Useful for troubleshooting; turn off for normal use."
+      },
+      "ambilightClearsEffect": {
+        "title": "Ambilight returns to capture",
+        "type": "boolean",
+        "default": true,
+        "required": false,
+        "description": "When you turn on Ambilight/USB capture, clear the plugin's running effect/color so the live capture feed becomes visible again (recommended)."
+      },
+      "autoPowerOnAction": {
+        "title": "Auto power-on actions",
+        "type": "boolean",
+        "default": true,
+        "required": false,
+        "description": "Turn the LEDs on automatically when you pick an effect, set a color, or enable capture, so the result is never invisible (recommended)."
+      },
+      "ambilightMode": {
+        "title": "Ambilight Switch Mode",
+        "type": "string",
+        "default": "leddevice",
+        "required": false,
+        "oneOf": [
+          {
+            "title": "LED device \u2014 switch enables/disables the LED device (default)",
+            "enum": [
+              "leddevice"
+            ]
+          },
+          {
+            "title": "Ambient \u2014 switch disables the capture device",
+            "enum": [
+              "ambient"
+            ]
+          },
+          {
+            "title": "Capture \u2014 switch toggles the capture device",
+            "enum": [
+              "capture"
+            ]
+          },
+          {
+            "title": "Feed \u2014 show/blank the picture",
+            "enum": [
+              "feed"
+            ]
+          }
+        ],
+        "description": "What the Ambilight switch does. 'LED device' enables/disables the LED device only. Other modes control the capture device or picture."
+      },
+      "maxEffects": {
+        "title": "Max Effects In Wheel",
+        "type": "integer",
+        "default": 64,
+        "required": false,
+        "description": "Size of the effects wheel when auto-discovering. Raise only if your server has more effects than this; keep the total low to stay within HomeKit limits."
+      },
+      "hideMusicEffects": {
+        "title": "Hide music/audio effects",
+        "type": "boolean",
+        "default": true,
+        "required": false,
+        "description": "When auto-discovering effects, hide HyperHDR's audio visualizers (\"Music: ...\") for a cleaner Hyperion.NG-style wheel."
+      },
+      "mainMode": {
+        "title": "Main Light Button Mode",
+        "type": "string",
+        "default": "ambient",
+        "required": false,
+        "oneOf": [
+          {
+            "title": "Ambient \u2014 main button toggles ambient mode (disables capture)",
+            "enum": [
+              "ambient"
+            ]
+          },
+          {
+            "title": "Power \u2014 main button is master power",
+            "enum": [
+              "power"
+            ]
+          }
+        ],
+        "description": "What the main light On/Off button does. 'Ambient' makes it the ambient-light control (disables the capture device when on). 'Power' makes it master power."
+      }
+    }
+  },
+  "layout": [
+    "name",
+    "host",
+    "port",
+    "transport",
+    "priority",
+    "mainMode",
+    {
+      "type": "fieldset",
+      "expandable": true,
+      "title": "Ambilight",
+      "items": [
+        "ambilightName",
+        "ambilightMode",
+        "ambilightTarget"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "expandable": true,
+      "title": "Authentication",
+      "items": [
+        "token",
+        "tls"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "expandable": true,
+      "title": "Exposed Services",
+      "items": [
+        "expose.color",
+        "expose.ambilight",
+        "expose.effects",
+        "expose.usbCapture",
+        "expose.screenCapture",
+        "expose.audioCapture",
+        "expose.captureSwitches",
+        "expose.componentSwitches",
+        "expose.clearAllSwitch"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "expandable": true,
+      "title": "Effects List",
+      "items": [
+        "hideMusicEffects",
+        {
+          "key": "effects",
+          "type": "array",
+          "items": [
+            "effects[]"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "fieldset",
+      "expandable": true,
+      "title": "Advanced",
+      "items": [
+        "powerComponent",
+        "ambilightClearsEffect",
+        "autoPowerOnAction",
+        "maxEffects",
+        "pollInterval",
+        "origin",
+        "verboseLog"
+      ]
+    }
+  ]
+}

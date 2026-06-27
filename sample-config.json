@@ -1,0 +1,38 @@
+{
+  "accessories": [
+    {
+      "accessory": "Hyperion",
+      "name": "Hyperion TV Backlight",
+      "ambilightName": "Hyperion TV Ambilight",
+      "host": "192.168.0.10",
+      "port": 19444,
+      "transport": "auto",
+      "priority": 100,
+      "ambilightTarget": "auto",
+      "pollInterval": 10,
+      "expose": {
+        "color": true,
+        "ambilight": true,
+        "effects": true,
+        "usbCapture": true,
+        "screenCapture": false,
+        "audioCapture": false,
+        "captureSwitches": false,
+        "componentSwitches": false,
+        "clearAllSwitch": false
+      }
+    }
+  ],
+  "platforms": [
+    {
+      "platform": "HyperionV2",
+      "name": "Hyperion",
+      "host": "192.168.0.10",
+      "port": 19444,
+      "transport": "tcp",
+      "priority": 100,
+      "multiInstance": true,
+      "expose": { "color": true, "ambilight": true, "effects": true, "usbCapture": true }
+    }
+  ]
+}
