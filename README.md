@@ -84,7 +84,7 @@ platform).
 | `expose.color` | `true` | Hue/Saturation on the main light. |
 | `expose.ambilight` | `true` | Ambilight switch. |
 | `expose.effects` | `true` | Effects selector (Television tile). |
-| `expose.usbCapture` | `false` | Optional extra dedicated USB capture (V4L) switch. |
+| `expose.usbCapture` | `true` | Dedicated USB Capture (V4L) switch. |
 | `expose.screenCapture` | `false` | Screen capture (GRABBER) switch. |
 | `expose.audioCapture` | `false` | Audio capture switch. |
 | `expose.captureSwitches` | `false` | All three capture switches at once. |
@@ -93,7 +93,7 @@ platform).
 | `origin` | `Homebridge` | Label shown in Hyperion's priority list. |
 | `mainMode` | `power` | Main light: `power` (master, 0%=off) or `ambient` (disable capture). |
 | `ambilightMode` | `leddevice` | Ambilight switch: `leddevice` / `ambient` / `capture` / `feed`. |
-| `effectsPowerCapture` | `true` | Effects-tile power button toggles the USB capture device (V4L). |
+| `effectsPowerCapture` | `false` | If on, effects-tile power toggles V4L (disables the wheel while capture is off). |
 | `verboseLog` | `false` | Log every command + result to the main log (troubleshooting). |
 | `ambilightClearsEffect` | `true` | Enabling ambilight/capture clears the running effect so the live feed shows. |
 | `autoPowerOnAction` | `true` | Picking an effect/color or enabling capture powers the LEDs on. |
@@ -105,8 +105,8 @@ platform).
   `adjustment.brightness`. Hue/Saturation send a solid `color` at your priority.
 - **Ambilight switch** - enables/disables the **LED device** (`leddevice` mode).
   (Other modes: `ambient`, `capture`, `feed`.)
-- **USB capture switch** - off by default; a dedicated V4L switch you can
-  re-enable with `expose.usbCapture: true`.
+- **USB Capture switch** - dedicated on/off for the USB/HDMI capture device (V4L);
+  retains its state.usbCapture: true`.
 - **Effects** - a Television tile; its **power button toggles the USB capture
   device (V4L)**, and its wheel is **auto-populated from your server's effects**. HyperHDR's "Music: ..." audio visualizers are hidden
   by default for a cleaner Hyperion.NG-style list. The first entry is Off.

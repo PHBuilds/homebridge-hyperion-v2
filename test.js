@@ -107,14 +107,20 @@ server.listen(0, '127.0.0.1', async () => {
   assert.ok(allOff && allOff.componentstate.state === false, 'brightness 0% powers off');
   ok('brightness slider at 0% turns the light off');
 
-  // Television power button toggles USB capture (V4L)
-  const tv = svcs.find((s) => s.constructor.UUID === 'Television');
+  // USB capture switch toggles V4L (separate from the effects tile)
+  const usbSw = svcs.find((s) => s.subtype === 'cap-V4L');
+  assert.ok(usbSw, 'USB capture switch present');
   recv.length = 0;
-  await tv.getCharacteristic(Characteristic.Active)._onSet(Characteristic.Active.ACTIVE);
+  await usbSw.getCharacteristic(Characteristic.On)._onSet(true);
   await new Promise((r) => setTimeout(r, 60));
   const v4lOn = [...recv].reverse().find((c) => c.command === 'componentstate' && c.componentstate.component === 'V4L');
-  assert.ok(v4lOn && v4lOn.componentstate.state === true, 'TV power enables V4L');
-  ok('effects-tile power button controls USB capture (V4L)');
+  assert.ok(v4lOn && v4lOn.componentstate.state === true, 'USB switch enables V4L');
+  ok('USB capture switch controls the capture device (V4L)');
+
+  // effects tile present and independent (wheel always usable)
+  const tv = svcs.find((s) => s.constructor.UUID === 'Television');
+  assert.ok(tv, 'effects Television present');
+  ok('effects tile stays usable (wheel always available)');
 
   // ambilight switch toggles the LED device
   const ambi = svcs.find((s) => s.subtype === 'ambilight');

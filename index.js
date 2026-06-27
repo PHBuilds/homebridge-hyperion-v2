@@ -631,6 +631,7 @@ class HyperionController extends EventEmitter {
     if (Array.isArray(info.adjustment) && info.adjustment.length) {
       const b = info.adjustment[0].brightness;
       if (typeof b === 'number') this.state.brightness = clamp(b, 0, 100);
+      if (info.adjustment[0].id) this._adjustmentId = info.adjustment[0].id;
     }
 
     // Remember the effects the server actually has (for validation / discovery).
@@ -767,7 +768,11 @@ class HyperionController extends EventEmitter {
 
   async setBrightness(value) {
     const v = clamp(value, 0, 100);
-    await this._cmd({ command: 'adjustment', adjustment: { brightness: v } });
+    const adjustment = { brightness: v };
+    // Target the active adjustment profile explicitly; some Hyperion/HyperHDR
+    // setups ignore an untargeted adjustment, so brightness appeared to do nothing.
+    if (this._adjustmentId) adjustment.id = this._adjustmentId;
+    await this._cmd({ command: 'adjustment', adjustment });
     this.state.brightness = v;
     this._pin('brightness', v);
     this.emit('changed', this.state);
@@ -1050,14 +1055,14 @@ function resolveConfig(config, log) {
     // 'ambient' = disables the capture device; 'capture'/'feed' as named.
     ambilightMode: (config.ambilightMode || 'leddevice').toLowerCase(),
     // The effects-tile power button toggles the USB capture device (V4L).
-    effectsPowerCapture: asBool(config.effectsPowerCapture, true),
+    effectsPowerCapture: asBool(config.effectsPowerCapture, false),
     expose: {
       color: asBool(expose.color, true),
       ambilight: asBool(expose.ambilight, true),
       effects: asBool(expose.effects, true),
       componentSwitches: asBool(expose.componentSwitches, false),
       captureSwitches: asBool(expose.captureSwitches, false),
-      usbCapture: asBool(expose.usbCapture, false),
+      usbCapture: asBool(expose.usbCapture, true),
       screenCapture: asBool(expose.screenCapture, false),
       audioCapture: asBool(expose.audioCapture, false),
       clearAllSwitch: asBool(expose.clearAllSwitch, false),

@@ -152,9 +152,9 @@
             "default": true
           },
           "usbCapture": {
-            "title": "USB capture switch (V4L) \u2014 extra",
+            "title": "USB Capture switch (V4L)",
             "type": "boolean",
-            "default": false
+            "default": true
           },
           "screenCapture": {
             "title": "Screen capture switch (GRABBER)",
@@ -303,9 +303,9 @@
       "effectsPowerCapture": {
         "title": "Effects tile power = USB capture",
         "type": "boolean",
-        "default": true,
+        "default": false,
         "required": false,
-        "description": "When on, the power button on the effects tile enables/disables the USB capture device (V4L)."
+        "description": "If on, the effects tile's power button toggles the USB capture device \u2014 note this makes the effects wheel unusable while capture is off. Off (default) keeps the wheel always usable; use the USB Capture switch for capture instead."
       }
     }
   },
