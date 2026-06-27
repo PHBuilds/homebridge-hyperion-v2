@@ -1043,10 +1043,14 @@ function resolveConfig(config, log) {
     ambilightTarget: (config.ambilightTarget || 'auto').toLowerCase(), // usb|screen|both|auto
     // Main light On/Off behaviour: 'ambient' (toggle ambient mode by disabling
     // the capture device) or 'power' (master ALL/LEDDEVICE power).
-    mainMode: (config.mainMode || 'ambient').toLowerCase(),
+    // 'power'  = main light On/Off is master power (brightness 0% = off);
+    // 'ambient' = main light toggles ambient mode (disables capture).
+    mainMode: (config.mainMode || 'power').toLowerCase(),
     // 'leddevice' = Ambilight switch toggles the LED device on/off;
     // 'ambient' = disables the capture device; 'capture'/'feed' as named.
     ambilightMode: (config.ambilightMode || 'leddevice').toLowerCase(),
+    // The effects-tile power button toggles the USB capture device (V4L).
+    effectsPowerCapture: asBool(config.effectsPowerCapture, true),
     expose: {
       color: asBool(expose.color, true),
       ambilight: asBool(expose.ambilight, true),
@@ -1212,15 +1216,23 @@ function wireServices(ctx) {
       Characteristic.SleepDiscoveryMode.ALWAYS_DISCOVERABLE,
     );
 
-    // Keep the tile Active so the Home app always sends input-wheel changes.
-    tv.getCharacteristic(Characteristic.Active)
-      .onGet(async () => Characteristic.Active.ACTIVE)
-      .onSet(async (v) => {
-        if (v === Characteristic.Active.INACTIVE) {
-          await controller.clearEffect();
-          setTimeout(() => tv.updateCharacteristic(Characteristic.Active, Characteristic.Active.ACTIVE), 200);
-        }
-      });
+    // The effects-tile power button enables/disables the USB capture device (V4L).
+    if (cfg.effectsPowerCapture) {
+      tv.getCharacteristic(Characteristic.Active)
+        .onGet(async () => (controller.getCapture(['V4L'])
+          ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE))
+        .onSet(async (v) => controller.setCapture(['V4L'], v === Characteristic.Active.ACTIVE));
+    } else {
+      // Keep the tile Active so the Home app always sends input-wheel changes.
+      tv.getCharacteristic(Characteristic.Active)
+        .onGet(async () => Characteristic.Active.ACTIVE)
+        .onSet(async (v) => {
+          if (v === Characteristic.Active.INACTIVE) {
+            await controller.clearEffect();
+            setTimeout(() => tv.updateCharacteristic(Characteristic.Active, Characteristic.Active.ACTIVE), 200);
+          }
+        });
+    }
 
     tv.getCharacteristic(Characteristic.ActiveIdentifier)
       .onGet(async () => controller.getEffectIdentifier())
@@ -1302,9 +1314,10 @@ function wireServices(ctx) {
       }
       if (handles.effects) {
         if (handles.syncEffects) handles.syncEffects();
-        handles.effects.updateCharacteristic(
-          Characteristic.Active, Characteristic.Active.ACTIVE,
-        );
+        const tvActive = cfg.effectsPowerCapture
+          ? (controller.getCapture(['V4L']) ? Characteristic.Active.ACTIVE : Characteristic.Active.INACTIVE)
+          : Characteristic.Active.ACTIVE;
+        handles.effects.updateCharacteristic(Characteristic.Active, tvActive);
         handles.effects.updateCharacteristic(
           Characteristic.ActiveIdentifier, controller.getEffectIdentifier(),
         );
@@ -1379,8 +1392,8 @@ function validateConfig(cfg, log) {
     cfg.pollInterval = 10;
   }
   if (!['ambient', 'power'].includes(cfg.mainMode)) {
-    warn(`Unknown mainMode "${cfg.mainMode}"; using "ambient".`);
-    cfg.mainMode = 'ambient';
+    warn(`Unknown mainMode "${cfg.mainMode}"; using "power".`);
+    cfg.mainMode = 'power';
   }
   if (!['leddevice', 'ambient', 'capture', 'feed'].includes(cfg.ambilightMode)) {
     warn(`Unknown ambilightMode "${cfg.ambilightMode}"; using "leddevice".`);

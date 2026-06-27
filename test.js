@@ -94,13 +94,27 @@ server.listen(0, '127.0.0.1', async () => {
   assert.ok(adj && adj.adjustment.brightness === 33, 'brightness reached Hyperion');
   ok('control commands reach Hyperion (brightness=33)');
 
-  // main light (ambient mode) ON disables the capture device (V4L)
+  // main light (power mode) ON = master power; brightness 0% turns it off
   recv.length = 0;
   await light.getCharacteristic(Characteristic.On)._onSet(true);
   await new Promise((r) => setTimeout(r, 60));
-  const v4l = [...recv].reverse().find((c) => c.command === 'componentstate' && c.componentstate.component === 'V4L');
-  assert.ok(v4l && v4l.componentstate.state === false, 'main light ON disables V4L (ambient)');
-  ok('main light controls ambient mode (disables capture)');
+  const allOn = [...recv].reverse().find((c) => c.command === 'componentstate' && c.componentstate.component === 'ALL');
+  assert.ok(allOn && allOn.componentstate.state === true, 'main light ON = master power');
+  recv.length = 0;
+  await light.getCharacteristic(Characteristic.Brightness)._onSet(0);
+  await new Promise((r) => setTimeout(r, 60));
+  const allOff = [...recv].reverse().find((c) => c.command === 'componentstate' && c.componentstate.component === 'ALL');
+  assert.ok(allOff && allOff.componentstate.state === false, 'brightness 0% powers off');
+  ok('brightness slider at 0% turns the light off');
+
+  // Television power button toggles USB capture (V4L)
+  const tv = svcs.find((s) => s.constructor.UUID === 'Television');
+  recv.length = 0;
+  await tv.getCharacteristic(Characteristic.Active)._onSet(Characteristic.Active.ACTIVE);
+  await new Promise((r) => setTimeout(r, 60));
+  const v4lOn = [...recv].reverse().find((c) => c.command === 'componentstate' && c.componentstate.component === 'V4L');
+  assert.ok(v4lOn && v4lOn.componentstate.state === true, 'TV power enables V4L');
+  ok('effects-tile power button controls USB capture (V4L)');
 
   // ambilight switch toggles the LED device
   const ambi = svcs.find((s) => s.subtype === 'ambilight');

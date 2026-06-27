@@ -91,8 +91,9 @@ platform).
 | `expose.componentSwitches` | `false` | Smoothing, Blackbar, Forwarder, Boblight, LED device. |
 | `expose.clearAllSwitch` | `false` | Momentary clear-all button. |
 | `origin` | `Homebridge` | Label shown in Hyperion's priority list. |
-| `mainMode` | `ambient` | Main light button: `ambient` (disable capture) or `power` (master). |
+| `mainMode` | `power` | Main light: `power` (master, 0%=off) or `ambient` (disable capture). |
 | `ambilightMode` | `leddevice` | Ambilight switch: `leddevice` / `ambient` / `capture` / `feed`. |
+| `effectsPowerCapture` | `true` | Effects-tile power button toggles the USB capture device (V4L). |
 | `verboseLog` | `false` | Log every command + result to the main log (troubleshooting). |
 | `ambilightClearsEffect` | `true` | Enabling ambilight/capture clears the running effect so the live feed shows. |
 | `autoPowerOnAction` | `true` | Picking an effect/color or enabling capture powers the LEDs on. |
@@ -106,8 +107,8 @@ platform).
   (Other modes: `ambient`, `capture`, `feed`.)
 - **USB capture switch** - off by default; a dedicated V4L switch you can
   re-enable with `expose.usbCapture: true`.
-- **Effects** - a Television tile whose wheel is **auto-populated from your
-  server's actual effects**. HyperHDR's "Music: ..." audio visualizers are hidden
+- **Effects** - a Television tile; its **power button toggles the USB capture
+  device (V4L)**, and its wheel is **auto-populated from your server's effects**. HyperHDR's "Music: ..." audio visualizers are hidden
   by default for a cleaner Hyperion.NG-style list. The first entry is Off.
 - **Component / capture switches** *(optional)* - direct on/off for individual
   Hyperion components.

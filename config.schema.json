@@ -282,23 +282,30 @@
       "mainMode": {
         "title": "Main Light Button Mode",
         "type": "string",
-        "default": "ambient",
+        "default": "power",
         "required": false,
         "oneOf": [
           {
-            "title": "Ambient \u2014 main button toggles ambient mode (disables capture)",
-            "enum": [
-              "ambient"
-            ]
-          },
-          {
-            "title": "Power \u2014 main button is master power",
+            "title": "Power \u2014 main light is master power; brightness 0% turns it off (default)",
             "enum": [
               "power"
             ]
+          },
+          {
+            "title": "Ambient \u2014 main light toggles ambient mode (disables capture)",
+            "enum": [
+              "ambient"
+            ]
           }
         ],
-        "description": "What the main light On/Off button does. 'Ambient' makes it the ambient-light control (disables the capture device when on). 'Power' makes it master power."
+        "description": "What the main light On/Off does. 'Power' = master power, and the brightness slider at 0% turns the light off. 'Ambient' disables the capture device when on."
+      },
+      "effectsPowerCapture": {
+        "title": "Effects tile power = USB capture",
+        "type": "boolean",
+        "default": true,
+        "required": false,
+        "description": "When on, the power button on the effects tile enables/disables the USB capture device (V4L)."
       }
     }
   },
@@ -364,6 +371,7 @@
       "expandable": true,
       "title": "Advanced",
       "items": [
+        "effectsPowerCapture",
         "powerComponent",
         "ambilightClearsEffect",
         "autoPowerOnAction",
